@@ -47,7 +47,7 @@ MVVM，是Model-View-ViewModel的简写，是M-V-VM三部分组成。它核心�
 
 ## Spring IoC
 
-### 对IoC的了解？
+### 【重要】对IoC的了解？
 
 **IoC（Inversion of Control：控制反转）是一种设计思想，不是一个具体的技术实现**。IoC 的思想就是**将原本在程序中手动创建对象的控制权，交由 Spring 框架来管理**。不过， IoC 并非 Spring 特有，在其他语言中也有应用。
 
@@ -121,6 +121,37 @@ private SmsService smsServiceImpl1;
 private SmsService smsService;
 ```
 
+### @SpringBootApplication
+
+可以看出大概可以把 `@SpringBootApplication`看作是` @Configuration、@EnableAutoConfiguration、@ComponentScan `注解的集合。根据 SpringBoot 官网，这三个注解的作用分别是：
+
+- `@EnableAutoConfiguration`：启用 SpringBoot 的自动配置机制
+- `@ComponentScan`： 扫描被`@Component` (`@Service,@Controller`)注解的` bean`，注解默认会扫描该类所在的包下所有的类。
+- `@Configuration`：允许在上下文中注册额外的` bean` 或导入其他配置类
+
+### 开发 RESTful Web 服务常用的注解有哪些？
+
+Spring Bean 相关：
+
+- @Autowired : 自动导入对象到类中，被注入进的类同样要被 Spring 容器管理。
+- @RestController : @RestController注解是@Controller和@ResponseBody的合集,表示这是个控制器 bean,并且是将函数的返回值直 接填入 HTTP 响应体中,是 REST 风格的控制器。
+- @Component ：通用的注解，可标注任意类为 Spring 组件。如果一个 Bean 不知道属于哪个层，可以使用@Component 注解标注。
+- @Repository : 对应持久层即 Dao 层，主要用于数据库相关操作。
+- @Service : 对应服务层，主要涉及一些复杂的逻辑，需要用到 Dao 层。
+- @Controller : 对应 Spring MVC 控制层，主要用于接受用户请求并调用 Service 层返回数据给前端页面。
+
+**处理常见的 HTTP 请求类型：**
+
+- @GetMapping : GET 请求、
+- @PostMapping : POST 请求。
+- @PutMapping : PUT 请求。
+- @DeleteMapping : DELETE 请求。
+
+前后端传值：
+
+- @RequestParam以及@Pathvairable ：@PathVariable用于获取路径参数，@RequestParam用于获取查询参数。
+- @RequestBody ：用于读取 Request 请求（可能是 POST,PUT,DELETE,GET 请求）的 body 部分并且 Content-Type 为 application/json 格式的数据，接收到数据之后会自动将数据绑定到 Java 对象上去。系统会使用HttpMessageConverter或者自定义的HttpMessageConverter将请求的 body 中的 json 字符串转换为 java 对象。
+
 ### Bean的作用域有哪些？
 
 1. **singleton** : IoC 容器中只有唯一的 bean 实例。**Spring 中的 bean 默认都是单例的**，是对单例设计模式的应用。
@@ -149,7 +180,7 @@ public Person personPrototype() {
 
 **解决：**
 
-1. Bean中尽量避免定义可变的成员变量【？】
+1. Bean中尽量避免定义可变的成员变量
 2. 类中定义一个`ThreadLocal`成员变量，将需要的可变成员变量保存在ThreadLocal中。
 
 ### 【重要】Bean的生命周期了解吗？
@@ -211,9 +242,12 @@ public Person personPrototype() {
 
 ### 【重要】对AOP的了解
 
-AOP（Aspect-Oriented Programming：面向切面编程）一言蔽之， **AOP 的主要作用就是在不侵入原有程序的基础上实现对原有功能的增强，将与业务无关却为业务模块所共同调用的逻辑或责任（如事务处理、日志管理等），减少重复代码降低耦合度，利于拓展和维护。**
+AOP（Aspect-Oriented Programming：面向切面编程）一言蔽之， **AOP 的主要作用就是在不侵入原有程序的基础上实现对原有功能的增强，与业务无关却为业务模块所共同调用的，如日志管理、权限认证。减少重复代码降低耦合度，利于拓展和维护。**使用"横切"技术，AOP把软件系统分为两个部分：**核心关注点**和**横切关注点**。
 
-想象下面的场景，开发中在多个模块间有某段重复的代码，我们通常是怎么处理的？显然，没有人会靠“复制粘贴”吧。在传统的面向过程编程中，我们也会将这段代码，抽象成一个方法，然后在需要的地方分别调用这个方法，这样当这段代码需要修改时，我们只需要改变这个方法就可以了。然而需求总是变化的，有一天，新增了一个需求，需要再多出做修改，我们需要再抽象出一个方法，然后再在需要的地方分别调用这个方法，又或者我们不需要这个方法了，我们还是得删除掉每一处调用该方法的地方。实际上涉及到多个地方具有相同的修改的问题我们都可以通过 AOP 来解决。
+**Spring中AOP代理由Spring的IOC容器负责生成、管理，其依赖关系也由IOC容器负责管理**。因此，AOP代理可以直接使用容器中的其它bean实例作为目标，这种关系可由IOC容器的依赖注入提供。Spring创建代理的规则为：
+
+1. **默认使用Java动态代理来创建AOP代理**，这样就可以为任何接口实例创建代理了
+2. **当需要代理的类不是代理接口的时候，Spring会切换为使用CGLIB代理**，也可强制使用CGLIB
 
 ## Spring事务
 
@@ -221,7 +255,7 @@ AOP（Aspect-Oriented Programming：面向切面编程）一言蔽之， **AOP �
 
 **编程式事务** ： 在代码中硬编码(不推荐使用) : 通过 `TransactionTemplate`或者 `TransactionManager` 手动管理事务，实际应用中很少使用，但是对于你理解 Spring 事务管理原理有帮助。
 
-**声明式事务** ： 在 XML 配置文件中配置或者直接基于注解（推荐使用） : 实际是通过 AOP 实现（基于`@Transactional` 的全注解方式使用最多
+**声明式事务** ： 在 XML 配置文件中配置或者**直接基于注解**（推荐使用） : 实际是通过 AOP 实现（基于`@Transactional` 的全注解方式使用最多
 
 ### Spring事务中有几种事务传播行为？
 
