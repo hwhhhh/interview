@@ -10,7 +10,7 @@
 6. MyISAM 不支持数据库**异常崩溃后的安全恢复**，而 InnoDB 支持。
 7. InnoDB 的性能比 MyISAM 更强大。
 
-## 什么是事务？事务的特性？
+## 【重要】什么是事务？事务的特性？
 
 **一言蔽之，事务是逻辑上的一组操作，要么执行，要么都不执行。特性：ACID原子性（Atomicity）一致性（Consistency）隔离性（Isolation）持久性（Durability）原子性：由undo log保证，隔离性由锁和MVCC保证、持久性由redo log和bin log保证。**
 **一致性由AID共同保证。**

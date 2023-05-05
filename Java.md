@@ -47,6 +47,13 @@ error：一般是指和jvm相关的错误，如系统崩溃、内存不足、方
 
 exception：一般是程序可以处理的异常，可以catch且可以恢复。对于这类exception，应尽量catch并恢复，而不是终止程序 
 
+### Java的四种引用类型
+
+- **强引用**：我们常常 new 出来的对象就是强引用类型，只要强引用存在，垃圾回收器将永远不会回收被引用的对象，哪怕内存不足的时候
+- **软引用**：使用 SoftReference 修饰的对象被称为软引用，软引用指向的对象在内存要溢出的时候被回收
+- **弱引用**：使用 WeakReference 修饰的对象被称为弱引用，只要发生垃圾回收，若这个对象只被弱引用指向，那么就会被回收
+- **虚引用**：虚引用是最弱的引用，在 Java 中使用 PhantomReference 进行定义。虚引用中唯一的作用就是用队列接收对象即将死亡的通知
+
 ## 面向对象基础
 
 ### 【重要】面向对象三大特征
@@ -476,7 +483,7 @@ JDK1.8中，通过**无参构造函数**构造的话，初始化赋值的是一�
 
 
 
-## 【!!!】Map
+## 【重要】Map
 
 ### HashMap
 
@@ -557,7 +564,7 @@ Java内存模型规定**所有的变量都存储在主内存**中，包括实例
 - **`sleep()` 方法没有释放锁，而 `wait()` 方法释放了锁** 。
 - **`wait()` 通常被用于线程间交互/通信，`sleep()`通常被用于暂停执行。**
 - `wait()` 方法被调用后，线程不会自动苏醒，**需要别的线程调用同一个对象上的 `notify()`或者 `notifyAll()` 方法**。`sleep()`方法执行完成后，线程会自动苏醒，或者也可以使用 `wait(long timeout)` 超时后线程会自动苏醒。
-- `sleep()` 是 `Thread` 类的静态本地方法，`wait()` 则是 `Object` 类的本地方法。
+- **`sleep()` 是 `Thread` 类的静态本地方法，`wait()` 则是 `Object` 类的本地方法。**
 
 ### 【重要】volatile
 
@@ -605,6 +612,26 @@ Java内存模型规定**所有的变量都存储在主内存**中，包括实例
 - `volatile` 关键字能保证数据的可见性，但不能保证数据的原子性。`synchronized` 关键字两者都能保证。
 - `volatile`关键字主要用于解决变量在多个线程之间的可见性，而 `synchronized` 关键字解决的是多个线程之间访问资源的同步性。
 
+### ReentrantLock
+
+`ReentrantLock` 实现了 `Lock` 接口，是一个**可重入且独占式**的锁，和 `synchronized` 关键字类似。不过，`ReentrantLock` 更灵活、更强大，增加了轮询、超时、中断、公平锁和公平锁等高级功能。
+
+> 可重入指的是获取当前对象的锁后，可以再次获取这个对象的锁。
+
+### ReentrantLock与synchronized区别
+
+1. 都是可重入的锁
+
+2. synchronized依赖与JVM而ReentrantLock依赖与API
+
+3. ReentrantLock增加了一些功能
+
+   **等待可中断**：通过 `lock.lockInterruptibly()` 来实现这个机制。也就是说正在等待的线程可以选择放弃等待，改为处理其他事情。
+
+   **可实现公平锁**：通过`ReentrantLock(boolean fair)`构造方法来制定是否是公平的。
+
+   **可实现选择性通知（锁可以绑定多个条件）**: `synchronized`关键字与`wait()`和`notify()`/`notifyAll()`方法相结合可以实现等待/通知机制。`ReentrantLock`类当然也可以实现，但是需要借助于`Condition`接口与`newCondition()`方法。
+
 ### 【重要】ThreadLocal
 
 ThreadLocal实现每一个线程有自己的专属本地变量。
@@ -612,6 +639,10 @@ ThreadLocal实现每一个线程有自己的专属本地变量。
 原理：Thread类中其实有一个ThreadLocalMap类型的`threadLocals`和`inheritableThreadLocals`，能够存储键值对，默认情况是null，只有当前线程调用`ThreadLocal`的set和get方法时才创建他们。存储的时候是以ThrealLocal为键，对应的value为值；使用ThrealLocal时，会获取当前线程的ThrealLocalMap，根据键获取对应的value。
 
 内存泄漏：它的key为ThreadLocal的弱引用，value为强引用，所以垃圾回收的时候，key会被清理，value不会，这个时候会发生内存泄漏。ThreadLocal考虑到了这种情况，故调用set、get、remove方法会清理掉key为null的记录。但是使用完最后手动调用remove方法。
+
+### ThreadLocal如何解决哈希冲突
+
+**线性探测的方式（开放地址法）**发现这个位置上有元素了，利用固定算法，寻找一定步长的下个位置，依次判断。
 
 ### 线程生命周期
 
@@ -625,6 +656,20 @@ ThreadLocal实现每一个线程有自己的专属本地变量。
 ![Java 线程状态变迁图](assets/640.png)
 
 ## 线程池
+
+### 创建线程池
+
+1. 通过ThreadPoolExecutor构造函数来创建（推荐）
+
+2. 通过Executor框架的工具类Executors来创建。
+
+   FixedThreadPool：固定线程数量的线程池
+
+   SingleThreadPool：只有一个线程的线程池
+
+   CachedThreadPool：可根据实际情况调整线程数量的线程池。优先复用线程，若都在工作则创建新线程
+
+   ScheduledThreadPool：在给定延迟后运行任务或定期执行任务的线程池
 
 ### 线程池生命周期
 

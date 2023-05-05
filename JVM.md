@@ -240,3 +240,7 @@ G1 收集器的运作大致分为以下几个步骤：
 ### ZGC收集器
 
 与 CMS 中的 ParNew 和 G1 类似，ZGC 也采用标记-复制算法，不过 ZGC 对该算法做了重大改进。在 ZGC 中出现 Stop The World 的情况会更少！
+
+### G1和CMS的区别
+
+Sleep和wait
