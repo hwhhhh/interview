@@ -35,6 +35,63 @@ BroadcastReceiver：程序之间传递信息时的一种机制，作用时接受
 1. AsyncTask机制（适合短时间）
 2. Handler机制。子线程中主动调用Looper.prepare(); 创建Handler（会与当前线程的Looper对象相关联）处理相应Message。Looper.loop()。
 
+## Handler机制
+
+Handler是Android中提供的一种异步回调机制，也可以理解为线程间的消息机制。为了避免ANR,我们通常会把一些耗时操作（比如：网络请求、I/O操作、复杂计算等）放到子线程中去执行，而当子线程需要修改UI时则子线程需要通知主线程去完成修改UI的操作，则此时就需要我们使用Handler机制来完成子线程与主线程之间的通信。其本质是消费者-生产者。
+
+![73a9f2d42040a363d62cf1b572cfcc6a_看图王.png](assets/c16909c081392b75cd1f1abe78ce6d36.png)
+
+Looper创建时使用ThreadLocal，目的是保证每一个线程只创建唯一一个Looper。之后其他Handler初始化的时候直接获取第一个Handler创建的Looper。
+
+大致总结：在子线程中Handler将消息发送到MessageQueue中，然后Looper不断的从MessageQueue中读取消息，并调用Handler的dispatchMessage发送消息，最后再Handler来处理消息。
+
+- Looper ：**负责关联线程以及消息的分发**在该线程下从 MessageQueue 获取 Message，分发给 Handler ；
+- MessageQueue ：**是个队列，负责消息的存储与管理**，负责管理由 Handler 发送过来的 Message ；
+- Handler : **负责发送并处理消息**，面向开发者，提供 API，并隐藏背后实现的细节。
+
+**Handler 发送的消息由 MessageQueue 存储管理，并由 Loopler 负责回调消息到 handleMessage()。**
+
+**线程的转换由 Looper 完成，handleMessage() 所在线程由 Looper.loop() 调用者所在线程决定。**
+
+### 使用方式
+
+1. 在主线程中创建Handler实例，并且重写handlerMessage方法。
+
+```java
+private Handler handler = new Handler(){
+ @Override
+ public void handleMessage(Message msg) {
+     switch (msg.what) {
+         case 1:
+            //执行相关修改UI的操作
+             break;
+        }
+    }
+ };
+```
+
+2. 子线程中获取Handler对象，在需要执行更新UI操作的地方使用handler发送消息
+
+```java
+Message msg = Message.obtain();
+msg.obj = "content";
+msg.what = 1;
+//发送消息给Handler
+handler.sendMessage(msg);  
+```
+
+
+
+### **GUI为什么设计成单线程？**
+
+**多线程操作一个UI，很容易导致，或者极其容易导致反向加锁和死锁问题**
+
+通过用户级的代码去改变界面，如`TextView.setText`走的是个**自顶向下**的流程；而系统底层发起的如**键盘事件**、**点击事件**走的是个自底向上的流程。
+
+![image_android_component_handler_cnbolgs_from_top.jpg](assets/c33cafafa81342428d1d6d6e7f76fdc3~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp)![image_android_component_handler_cnbolgs_from_bottom.jpg](assets/e5aaa6efc7c941f3b9a449158798fa9d~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp)
+
+**为了避免死锁，每个流程都要走一样的加锁顺序，而GUI中的这两个流程却是完全相反的，如果每一层都有一个锁的话加锁就是个难以完成的任务了，而如果每一层都共用一个锁的话，那就跟单线程没区别了。即消息队列机制**
+
 ## Activity生命周期
 
 1. onCreate():可以做一些初始化的工作，比如调用setContentView去加载界面布局资源、初始化Activity所需数据等。

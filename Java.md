@@ -31,7 +31,7 @@ Java 中将实参传递给方法（或函数）的方式是 **值传递** ：
 - ==比较变量时，比较的是内容
 - 比较对象是，则是对地址的比较。
 
-**final**
+### **final**
 
 1. 修饰属性、基本类型表示值不可修改，引用类型表示引用不可变，对象具体值可变，必须要初始化，初始化之后不能再重新赋值 。
 
@@ -47,12 +47,44 @@ error：一般是指和jvm相关的错误，如系统崩溃、内存不足、方
 
 exception：一般是程序可以处理的异常，可以catch且可以恢复。对于这类exception，应尽量catch并恢复，而不是终止程序 
 
-### Java的四种引用类型
+### Java的四种引用类型【重点】
 
 - **强引用**：我们常常 new 出来的对象就是强引用类型，只要强引用存在，垃圾回收器将永远不会回收被引用的对象，哪怕内存不足的时候
 - **软引用**：使用 SoftReference 修饰的对象被称为软引用，软引用指向的对象在内存要溢出的时候被回收
 - **弱引用**：使用 WeakReference 修饰的对象被称为弱引用，只要发生垃圾回收，若这个对象只被弱引用指向，那么就会被回收
 - **虚引用**：虚引用是最弱的引用，在 Java 中使用 PhantomReference 进行定义。虚引用中唯一的作用就是用队列接收对象即将死亡的通知
+
+### String相关面试问题
+
+1. **String是基本数据类型吗？**
+
+   String不是基本的数据类型，它属于对象，基本数据类型有8种，整型byte、int、short、long；浮点型float、double；字符型char；布尔boolean 
+
+2. **String可以被继承吗？是可变的吗？**
+
+   String不可以被继承，因为是final修饰的，它被设计成不可变类，故不可变，体现在如String s = "hello"; s += "world!" s的指向内存起始地址已经改变。如果是自己声明的对象，如user包含name、age属性，name和age的值可以改变，但是声明的user引用执行的地址是不变的，而String类型的引用执行的起始地址会变化，就导致只要值改变了，String就是新的对象，造成内存开销，所以有了StringBuffer和StringBuilder 
+
+3. **String、StringBuffer、StringBuilder之间的区别？** 
+
+   String和StringBuffer、StringBuilder的区别：String声明的是不可变的对象，每次操作会生成新的String对象，而另外两个可以在原有对象的基础伤操作，所以需要经常改变字符串内容的情况最好不要用String。 StringBuffer、StringBuilder的区别：StringBuffer是线程安全的，StringBuilder不是，因而在多线程环境下需要使用StringBuffer 
+
+4. **String str = "i" 和String str = new String("i")一样吗？** 
+
+   不一样，String str = "i" 的方式，java虚拟机会将其分配到字符串常量池中，new String是声明在堆内存中 
+
+5. **String str = new String("i")创建了几个对象？** 
+
+   两个，先创建"i"在字符串常量池中，通过new 又创建在堆中 
+
+6. **String和byte[]如何转换？** 
+
+   String.getBytes() 和newString(byte[])
+
+### AutomicInteger的实现原理
+
+1. 原子性操作：AtomicInteger提供了一系列的原子性操作方法，如`get()`、`set()`、`incrementAndGet()`、`decrementAndGet()`等。这些方法都是原子操作，底层使用了CAS（Compare and Swap）算法，确保在多线程环境下对整数的操作是原子的，不会被其他线程中断或干扰。
+2. 内存可见性：AtomicInteger使用了volatile关键字来保证多线程之间的内存可见性。当一个线程修改AtomicInteger的值时，会立即将修改后的值刷新到主内存中，其他线程可以立即看到这个修改。
+3. 无锁机制：AtomicInteger使用了CAS算法来实现原子操作，而CAS是一种无锁机制，不需要使用传统的锁机制（如synchronized）来实现线程安全。CAS利用CPU的原子指令来实现对内存值的比较和修改，避免了线程阻塞和上下文切换的开销，提高了并发性能。
 
 ## 面向对象基础
 
@@ -102,6 +134,15 @@ exception：一般是程序可以处理的异常，可以catch且可以恢复。
 
 2. 一个类只能继承一个类，可以实现多个接口
 3. 接口中的成员只能是`public static final`类型的，**不能被修改且必须有初始值**，抽象类可以在子类被重新定义和赋值。
+
+### 面向对象基本原则
+
+1. **单一职责原则**（Single Responsibility Principle，SRP）：一个类应该只有一个引起它变化的原因。换句话说，一个类应该只有一个职责。这样可以提高类的内聚性，使得类更加易于理解、修改和维护。
+2. **开放封闭原则**（Open-Closed Principle，OCP）：软件实体（类、模块、函数等）应该对扩展开放，对修改关闭。即通过扩展现有的实体来实现变化，而不是修改已有的代码。这样可以减少对现有代码的影响，提高代码的可维护性和可扩展性。
+3. **里氏替换原则**（Liskov Substitution Principle，LSP）：子类对象应该能够替换父类对象，而程序的行为不会受到影响。也就是说，子类应该能够完全地替代父类，而不引发错误或破坏程序的正确性。
+4. **接口隔离原则**（Interface Segregation Principle，ISP）：客户端不应该依赖它不需要使用的接口。接口应该细化，保持单一职责，并且客户端只需要使用它们需要的接口。这样可以避免接口的臃肿和冗余，提高系统的灵活性和可维护性。
+5. **依赖倒置原则**（Dependency Inversion Principle，DIP）：高层模块不应该依赖低层模块，两者都应该依赖于抽象。抽象不应该依赖细节，而细节应该依赖抽象。这样可以降低模块之间的耦合度，提高系统的可扩展性和可维护性。
+6. **迪米特法则**（Law of Demeter，LoD）：也称为最少知识原则（Least Knowledge Principle，LKP）。一个对象应该对其他对象有尽可能少的了解，只与直接的朋友通信。也就是说，一个对象只应该与它的成员变量、方法参数、方法返回值以及它所创建的对象进行交互，而不应该了解其他对象的内部细节。
 
 ## 泛型
 
